@@ -15,6 +15,16 @@ This tool is designed to be very instrumental to devops engineers. It helps the 
 ```sh
 git clone https://github.com/ik-alex/HNG_Task_5a.git
 ```
-2. Make the DevOpsFetch tool executable
+
+2. Make the DevOpsFetch tool executable and run as a root user
 ```sh
-chmod +x 
+sudo su
+chmod +x ./devopsfetch.sh
+```
+
+3. View help functions
+```sh
+./devopsfetch.sh -h
+```
+
+4. 
