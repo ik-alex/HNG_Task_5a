@@ -13,4 +13,8 @@ This tool is designed to be very instrumental to devops engineers. It helps the 
 
 1. Clone this repository:
 ```sh
-git clone 
+git clone https://github.com/ik-alex/HNG_Task_5a.git
+```
+2. Make the DevOpsFetch tool executable
+```sh
+chmod +x 
