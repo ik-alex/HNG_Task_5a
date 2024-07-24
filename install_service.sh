@@ -30,4 +30,18 @@ EOF
 systemctl daemon-reload
 systemctl enable devopsfetch.service
 systemctl start devopsfetch.service
+
+# Set up log rotation
+cat << EOF > /etc/logrotate.d/devopsfetch.service
+/var/log/devopsfetch.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root root
+}
+EOF
+
 echo "Service installed and started."
