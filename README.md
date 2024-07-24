@@ -72,6 +72,25 @@ chmod +x ./devopsfetch.sh
 ./devopsfetch.sh -t '10 hour ago'
 ```
 
+# Script to install dependencies
+---
+
+```sh
+chmod +x ./install_service.sh
+./install_service.sh
+```
+
+Run `./install_service.sh` and set it execution mode to perform the following services
+
+1. Update system package
+2. Install dependecies such as
+   - nginx
+   - docker
+3. Copy the main script to /usr/local/bin
+4. setup systemd service (/etc/systemd/system/devopsfetch.service)
+5. Enable and start systemd service
+6. sets up rotation for devopsfetch logs to manage log files.
+
 
 
 
