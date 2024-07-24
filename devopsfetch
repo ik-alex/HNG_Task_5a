@@ -1,0 +1,132 @@
+#!/bin/bash
+
+# Function to display active ports
+listAllPorts() {
+    if [ -z "$1" ]; then
+        echo "Active Ports:"
+        netstat -tuln | grep LISTEN
+    else
+        echo "Details for port $1:"
+        netstat -tuln | grep LISTEN | grep "$1"
+    fi
+}
+
+# Function to display Docker information
+listDockerImagesAndContainer() {
+    if [ -z "$1" ]; then
+        echo "Docker Images:"
+        echo "-----------------------------------------------------------------------------------"
+        printf "%-20s %-15s %-15s %-20s\n" "REPOSITORY" "TAG" "IMAGE ID" "CREATED"
+        docker images --format "{{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-15s %-20s\n", $1, $2, $3, $4}'
+        echo "-----------------------------------------------------------------------------------"
+        echo
+        
+        
+        echo "Docker Containers:"
+        echo "-----------------------------------------------------------------------------------"
+        printf "%-20s %-15s %-10s %-15s %-20s\n" "CONTAINER ID" "IMAGE" "STATUS" "PORTS" "NAMES"
+        docker ps --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-10s %-15s %-20s\n", $1, $2, $3, $4, $5}'
+        echo "-----------------------------------------------------------------------------------"
+        echo
+        
+    else
+        docker inspect "$1"
+    fi
+}
+
+# Function to display Nginx configurations
+listNginxInfo() {
+    if [ -z "$1" ]; then
+        grep -R server_name /etc/nginx/sites-enabled/ | awk '{print $2 " " $3}' | sed 's/;//' | column -t
+    else
+        grep -R -A 10 "server_name $1" /etc/nginx/sites-enabled/
+    fi
+}
+
+# Function to display user logins
+listUsers() {
+    if [ -z "$1" ]; then
+        echo "******************User Logins:*********************"
+        who | head -n 10 | column -t
+    else
+        echo "*******************Details for user $1:*********************"
+        last "$1" | head -n 5 | column -t
+    fi
+}
+
+# Function to handle time-based queries
+showTimeRange() {
+    if [$# -eq 0]; then
+        echo "Error: Both start and end times are required."
+        return 1
+        elif [$# -eq 1]; then
+        # single date inputed
+        start_date = $(date -d "$1" +"%Y-%m-%d 00:00:00")
+        end_date = $(date -d "$1 + 1 day" +"%Y-%m-%d 00:00:00")
+        elif [$# -eq 2]; then
+        # date range
+        start_date = $(date -d "$1" +"%Y-%m-%d 00:00:00")
+        end_date = $(date -d "$2 + 1 day" +"%Y-%m-%d 00:00:00")
+    else
+        echo "invalid number of argument to specify the time range"
+        return 1
+        
+    fi
+    
+    # displaying the log of the date variations
+    journalctl --since "$start_date" --until "$end_date"
+}
+
+# Function to handle help command
+helpInfo() {
+    echo "Usage: $0 [options]"
+    echo
+    echo "Options:"
+    echo "  -p, --port <port_number>       Display all active ports or details for a specific port."
+    echo "  -d, --docker [<container_name>] List Docker images and containers or details for a specific container."
+    echo "  -n, --nginx [<domain>]          Display all Nginx configurations or details for a specific domain."
+    echo "  -u, --users [<username>]        List all users or details for a specific user."
+    echo "  -t, --time <start_time> <end_time> Display activities within a specified time range."
+    echo "  -h, --help                      Display this help message."
+}
+
+# Main script logic
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -p|--port)
+            shift
+            listAllPorts "$2"
+            shift
+        ;;
+        -d|--docker)
+            shift
+            listDockerImagesAndContainer "$2"
+            shift
+        ;;
+        -n|--nginx)
+            shift
+            listNginxInfo "$2"
+            shift
+        ;;
+        -u|--users)
+            shift
+            listUsers "$2"
+            shift
+        ;;
+        -t|--time)
+            shift
+            showTimeRange "$@"
+            shift 2
+        ;;
+        -h|--help)
+            helpInfo
+            exit 0
+        ;;
+        *)
+            echo "Unknown option: $1"
+            helpInfo
+            exit 1
+        ;;
+    esac
+done
+
