@@ -85,7 +85,6 @@ helpInfo() {
 }
 
 # Main script logic
-<<<<<<< HEAD
 case "$1" in
     -p|--port)
         listAllPorts "$2"
@@ -113,44 +112,3 @@ case "$1" in
         exit 1
     ;;
 esac
-=======
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-        -p|--port)
-            shift
-            listAllPorts "$2"
-            shift
-        ;;
-        -d|--docker)
-            shift
-            listDockerImagesAndContainer "$2"
-            shift
-        ;;
-        -n|--nginx)
-            shift
-            listNginxInfo "$2"
-            shift
-        ;;
-        -u|--users)
-            shift
-            listUsers "$2"
-            shift
-        ;;
-        -t|--time)
-            shift
-            showTimeRange "$@"
-            shift 
-        ;;
-        -h|--help)
-            helpInfo
-            exit 0
-        ;;
-        *)
-            echo "Unknown option: $1"
-            helpInfo
-            exit 1
-        ;;
-    esac
-done
-
->>>>>>> cfe3d444c60ab2eaa98ddfb31aa57d7632d17455
