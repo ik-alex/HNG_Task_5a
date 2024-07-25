@@ -15,32 +15,25 @@ listAllPorts() {
 # Function to display Docker information
 listDockerImagesAndContainer() {
     if [ -z "$1" ]; then
-        echo "Docker Images:"
-        echo "-----------------------------------------------------------------------------------"
-        printf "%-20s %-15s %-15s %-20s\n" "REPOSITORY" "TAG" "IMAGE ID" "CREATED"
-        docker images --format "{{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-15s %-20s\n", $1, $2, $3, $4}'
-        echo "-----------------------------------------------------------------------------------"
-        echo
-        
         
         echo "Docker Containers:"
         echo "-----------------------------------------------------------------------------------"
         printf "%-20s %-15s %-10s %-15s %-20s\n" "CONTAINER ID" "IMAGE" "STATUS" "PORTS" "NAMES"
-        docker ps --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-10s %-15s %-20s\n", $1, $2, $3, $4, $5}'
+        docker ps -a --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-10s %-15s %-20s\n", $1, $2, $3, $4, $5}'
         echo "-----------------------------------------------------------------------------------"
         echo
         
     else
-        docker inspect "$1"
+        docker inspect "$1" | jq '.[0] | {Name: .Name, State: .State.Status, Image: .Config.Image, ID: .Id}' | column -t
     fi
 }
 
 # Function to display Nginx configurations
 listNginxInfo() {
     if [ -z "$1" ]; then
-        grep -R server_name /etc/nginx/sites-enabled/ | awk '{print $2 " " $3}' | sed 's/;//' | column -t
+        grep -R server_name /etc/nginx/sites-enabled/ | awk '{print $2 " " $3 " " $1 " " FILENAME}' | sed 's/;//' | column -t
     else
-        grep -R -A 10 "server_name $1" /etc/nginx/sites-enabled/
+        grep -R -A 10 "server_name $1" /etc/nginx/sites-enabled/ | column -t
     fi
 }
 
@@ -92,42 +85,30 @@ helpInfo() {
 }
 
 # Main script logic
-while [ "$#" -gt 0 ]; do
-    case "$1" in
-        -p|--port)
-            shift
-            listAllPorts "$2"
-            shift
-        ;;
-        -d|--docker)
-            shift
-            listDockerImagesAndContainer "$2"
-            shift
-        ;;
-        -n|--nginx)
-            shift
-            listNginxInfo "$2"
-            shift
-        ;;
-        -u|--users)
-            shift
-            listUsers "$2"
-            shift
-        ;;
-        -t|--time)
-            shift
-            showTimeRange "$@"
-            shift 2
-        ;;
-        -h|--help)
-            helpInfo
-            exit 0
-        ;;
-        *)
-            echo "Unknown option: $1"
-            helpInfo
-            exit 1
-        ;;
-    esac
-done
-
+case "$1" in
+    -p|--port)
+        listAllPorts "$2"
+    ;;
+    -d|--docker)
+        listDockerImagesAndContainer "$2"
+    ;;
+    -n|--nginx)
+        listNginxInfo "$2"
+    ;;
+    -u|--users)
+        listUsers "$2"
+    ;;
+    -t|--time)
+        shift
+        showTimeRange "$@"
+    ;;
+    -h|--help)
+        helpInfo
+        exit 0
+    ;;
+    *)
+        echo "Unknown option: $1"
+        helpInfo
+        exit 1
+    ;;
+esac
