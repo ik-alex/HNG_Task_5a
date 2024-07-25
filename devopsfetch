@@ -38,9 +38,9 @@ listDockerImagesAndContainer() {
 # Function to display Nginx configurations
 listNginxInfo() {
     if [ -z "$1" ]; then
-        grep -R server_name /etc/nginx/sites-enabled/ | awk '{print $2 " " $3}' | sed 's/;//' | column -t
+        grep -R server_name /etc/nginx/sites-enabled/ | awk '{print $2 " " $3 " " $1 " " FILENAME}' | sed 's/;//' | column -t
     else
-        grep -R -A 10 "server_name $1" /etc/nginx/sites-enabled/
+        grep -R -A 10 "server_name $1" /etc/nginx/sites-enabled/ | column -t
     fi
 }
 
