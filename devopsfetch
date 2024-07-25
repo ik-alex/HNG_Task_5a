@@ -2,13 +2,14 @@
 
 # Function to display active ports
 listAllPorts() {
+    echo "USER PORT SERVICE"
     if [ -z "$1" ]; then
-        echo "Active Ports:"
-        netstat -tuln | grep LISTEN
+        ss -tuln | awk 'NR>1 {split($5, a, ":"); print a[length(a)]}' | sort -u | while read port; do
+            lsof -i :$port -sTCP:LISTEN -n -P 2>/dev/null | awk 'NR>1 {print $3, $9, $1}' | awk -v p=$port '{split($2, a, ":"); if (a[length(a)] == p) print $1, p, $3}' | sort -u
+        done
     else
-        echo "Details for port $1:"
-        netstat -tuln | grep LISTEN | grep "$1"
-    fi
+        lsof -i :$1 -sTCP:LISTEN -n -P 2>/dev/null | awk 'NR>1 {print $3, $9, $1}' | awk -v p=$1 '{split($2, a, ":"); if (a[length(a)] == p) print $1, p, $3}' | sort -u
+    fi | column -t
 }
 
 # Function to display Docker information
@@ -47,7 +48,7 @@ listNginxInfo() {
 listUsers() {
     if [ -z "$1" ]; then
         echo "******************User Logins:*********************"
-        who | head -n 10 | column -t
+        last | head -n 10 | column -t
     else
         echo "*******************Details for user $1:*********************"
         last "$1" | head -n 5 | column -t
