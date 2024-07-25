@@ -117,7 +117,7 @@ while [ "$#" -gt 0 ]; do
         -t|--time)
             shift
             showTimeRange "$@"
-            shift 2
+            shift 
         ;;
         -h|--help)
             helpInfo
