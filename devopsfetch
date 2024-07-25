@@ -15,23 +15,16 @@ listAllPorts() {
 # Function to display Docker information
 listDockerImagesAndContainer() {
     if [ -z "$1" ]; then
-        echo "Docker Images:"
-        echo "-----------------------------------------------------------------------------------"
-        printf "%-20s %-15s %-15s %-20s\n" "REPOSITORY" "TAG" "IMAGE ID" "CREATED"
-        docker images --format "{{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-15s %-20s\n", $1, $2, $3, $4}'
-        echo "-----------------------------------------------------------------------------------"
-        echo
-        
         
         echo "Docker Containers:"
         echo "-----------------------------------------------------------------------------------"
         printf "%-20s %-15s %-10s %-15s %-20s\n" "CONTAINER ID" "IMAGE" "STATUS" "PORTS" "NAMES"
-        docker ps --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-10s %-15s %-20s\n", $1, $2, $3, $4, $5}'
+        docker ps -a --format "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" | awk 'BEGIN {FS="\t"} {printf "%-20s %-15s %-10s %-15s %-20s\n", $1, $2, $3, $4, $5}'
         echo "-----------------------------------------------------------------------------------"
         echo
         
     else
-        docker inspect "$1"
+        docker inspect "$1" | jq '.[0] | {Name: .Name, State: .State.Status, Image: .Config.Image, ID: .Id}' | column -t
     fi
 }
 
